@@ -1,0 +1,28 @@
+version: '3'
+services:
+  www:
+    image: tokumeikoi/lcrp
+    volumes:
+      - './www:/www'
+      - './wwwlogs:/wwwlogs'
+      - './caddy.conf:/run/caddy/caddy.conf'
+      - './supervisord.conf:/run/supervisor/supervisord.conf'
+      - './crontabs.conf:/etc/crontabs/root'
+      - './.caddy:/root/.caddy'
+    ports:
+      - '80:80'
+      - '443:443'
+    restart: always
+    environment:
+      - mysql_database=${MYSQL_DATABASE}
+      - mysql_password=${MYSQL_ROOT_PASSWORD}
+    links:
+      - mysql
+  mysql:
+    image: mysql:5.7.42
+    volumes:
+      - './mysql:/var/lib/mysql'
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
