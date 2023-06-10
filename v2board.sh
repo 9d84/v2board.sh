@@ -19,7 +19,7 @@ exit_if_not_root() {
 check_depend() {
 
     # 需要检查的命令列表
-    depends=("docker" "docker-compose" "git")
+    depends=("docker" "git")
 
     # 用于存储未找到的命令
     missing_depends=()

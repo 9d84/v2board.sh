@@ -12,5 +12,6 @@ dnf install  git curl -y||(apt update -y &&  apt install git curl -y) && bash -c
 
 ```bash
 git clone https://github.com/9d84/v2board.sh
+cd v2board.sh
 sudo bash ./v2board.sh
 ```
