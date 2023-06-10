@@ -108,6 +108,22 @@ replace_text_in_file() {
     sed -i "s|$old_text|$new_text|g" "$file_path"
 }
 
+email() {
+    echo "请输入您的邮箱地址："
+    read email
+
+    # 邮箱地址的正则表达式模式
+    pattern="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+
+    # 检查输入的邮箱地址是否有效
+    if [[ $email =~ $pattern ]]; then
+        # 将邮箱地址添加到caddy.conf文件
+        sed -i "0,/{/ s/{/{\ntls ${email}/" caddy.conf
+    else
+        echo "请输入有效的邮箱地址"
+    fi
+}
+
 # 主函数
 replace_domain_name() {
     bind_domain=false
@@ -116,7 +132,7 @@ replace_domain_name() {
     if [[ $? -eq 0 ]]; then
         bind_domain=true
         domain_name=$(ask_domain_name)
-        replace_text_in_file "caddy.conf" ":80" "https://$domain_name"
+        replace_text_in_file "caddy.conf" ":80" "$domain_name"
     fi
 }
 
