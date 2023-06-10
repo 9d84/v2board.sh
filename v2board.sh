@@ -51,6 +51,8 @@ init() {
 
     git submodule update --init
     git submodule update --remote
+    
+    cp .env.example .env
 
     # 提示用户输入mysql密码
     echo -e "${color}请输入mysql密码（按Enter键生成默认密码）:${reset_color}"
