@@ -127,7 +127,7 @@ replace_domain_name() {
 launch() {
     docker-compose up -d
 
-    docker-compose exec www bash -c \
+    docker compose exec www bash -c \
         'wget https://getcomposer.org/download/latest-stable/composer.phar && \
 php composer.phar install'
 
@@ -139,7 +139,7 @@ php composer.phar install'
 数据库密码: $mysql_password
 "
 
-    docker-compose exec www php artisan v2board:install
+    docker compose exec www php artisan v2board:install
 }
 
 exit_if_not_root
