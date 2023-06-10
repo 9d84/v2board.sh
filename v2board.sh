@@ -121,6 +121,7 @@ email() {
         sed -i "0,/{/ s/{/{\ntls ${email}/" caddy.conf
     else
         echo "请输入有效的邮箱地址"
+        exit 1
     fi
 }
 
