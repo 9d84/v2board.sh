@@ -125,7 +125,7 @@ replace_domain_name() {
 # TODO：脚本自动输入
 ###
 launch() {
-    docker-compose up -d
+    docker compose up -d
 
     docker compose exec www bash -c \
         'wget https://getcomposer.org/download/latest-stable/composer.phar && \
