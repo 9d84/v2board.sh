@@ -162,4 +162,5 @@ exit_if_not_root
 check_depend
 init
 replace_domain_name
+email
 launch
