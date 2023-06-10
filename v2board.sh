@@ -16,12 +16,12 @@ exit_if_not_root() {
     fi
 }
 
+# 检查依赖命令是否安装
 check_depend() {
-
     # 需要检查的命令列表
     depends=("docker" "git")
 
-    # 用于存储未找到的命令
+    # 存储未找到的命令
     missing_depends=()
 
     # 检查每个命令是否存在
@@ -31,7 +31,7 @@ check_depend() {
         fi
     done
 
-    # 判断是否有命令未找到
+    # 如果有命令未找到，则输出缺失的依赖信息并退出脚本
     if [ ${#missing_depends[@]} -gt 0 ]; then
         echo "缺少以下依赖:"
         for missing_command in "${missing_depends[@]}"; do
@@ -41,42 +41,41 @@ check_depend() {
     fi
 }
 
-###
-# 获取设置
-###
+# 初始化设置
 init() {
     # 设置颜色
     color="\033[38;5;206m"
     reset_color="\033[0m"
 
+    # 更新 git 子模块和重命名示例文件
     git submodule update --init
     git submodule update --remote
-
     find . -maxdepth 1 -type f -name "*.example" -exec bash -c 'newname="${1%.example}"; mv "$1" "$newname"' bash {} \;
 
-    # 提示用户输入mysql密码
-    echo -e "${color}请输入mysql密码（按Enter键生成默认密码）:${reset_color}"
+    # 提示用户输入 mysql 密码
+    echo -e "${color}请输入 mysql 密码（按 Enter 键生成默认密码）:${reset_color}"
     read -r mysql_password
 
-    # 如果密码为空，则生成一个16位的默认密码
+    # 如果密码为空，则生成一个默认密码
     if [ -z "$mysql_password" ]; then
         mysql_password=$(openssl rand -base64 12)
     fi
 
-    # 提示用户输入mysql数据库名称
-    echo -e "${color}请输入mysql数据库名称（默认v2board）:${reset_color}"
+    # 提示用户输入 mysql 数据库名称
+    echo -e "${color}请输入 mysql 数据库名称（默认为 v2board）:${reset_color}"
     read -r mysql_database
 
-    # 如果数据库名称为空，则设置为默认名称v2board
+    # 如果数据库名称为空，则设置为默认名称 v2board
     if [ -z "$mysql_database" ]; then
         mysql_database="v2board"
     fi
 
-    # 更新.env文件
+    # 更新 .env 文件中的 mysql 密码和数据库名称
     sed -i "s/MYSQL_ROOT_PASSWORD =.*/MYSQL_ROOT_PASSWORD = $mysql_password/" .env
     sed -i "s/MYSQL_DATABASE =.*/MYSQL_DATABASE = $mysql_database/" .env
 }
 
+# 获取用户输入
 get_user_input() {
     read -p "$1" response
     echo "$response"
@@ -108,6 +107,7 @@ replace_text_in_file() {
     sed -i "s|$old_text|$new_text|g" "$file_path"
 }
 
+# 提示用户输入邮箱地址，并将邮箱地址添加到 caddy.conf 文件
 email() {
     echo "请输入您的邮箱地址："
     read email
@@ -117,7 +117,7 @@ email() {
 
     # 检查输入的邮箱地址是否有效
     if [[ $email =~ $pattern ]]; then
-        # 将邮箱地址添加到caddy.conf文件
+        # 将邮箱地址添加到 caddy.conf 文件
         sed -i "0,/{/ s/{/{\ntls ${email}/" caddy.conf
     else
         echo "请输入有效的邮箱地址"
@@ -125,7 +125,7 @@ email() {
     fi
 }
 
-# 主函数
+# 替换域名相关的配置信息
 replace_domain_name() {
     bind_domain=false
 
@@ -137,10 +137,7 @@ replace_domain_name() {
     fi
 }
 
-###
-#启动v2board相关服务
-# TODO：脚本自动输入
-###
+# 启动 v2board 相关服务
 launch() {
     docker compose up -d
 
@@ -159,9 +156,15 @@ php composer.phar install'
     docker compose exec www php artisan v2board:install
 }
 
-exit_if_not_root
-check_depend
-init
-replace_domain_name
-email
-launch
+# 主函数
+main() {
+    exit_if_not_root
+    check_depend
+    init
+    replace_domain_name
+    email
+    launch
+}
+
+# 调用主函数
+main
