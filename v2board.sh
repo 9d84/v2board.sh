@@ -52,12 +52,7 @@ init() {
     git submodule update --init
     git submodule update --remote
 
-    for file in *.example; do
-        # 去掉文件名的'.example'扩展名部分
-        new_file="${file%.example}"
-        # 重命名文件，保留源文件
-        cp "$file" "$new_file"
-    done
+    find . -type f -name "*.example" -exec bash -c 'cp "$1" "${1%.example}"' bash {} \;
 
     # 提示用户输入mysql密码
     echo -e "${color}请输入mysql密码（按Enter键生成默认密码）:${reset_color}"
