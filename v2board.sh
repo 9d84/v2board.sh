@@ -51,8 +51,13 @@ init() {
 
     git submodule update --init
     git submodule update --remote
-    
-    cp .env.example .env
+
+    for file in *.example; do
+        # 去掉文件名的'.example'扩展名部分
+        new_file="${file%.example}"
+        # 重命名文件，保留源文件
+        cp "$file" "$new_file"
+    done
 
     # 提示用户输入mysql密码
     echo -e "${color}请输入mysql密码（按Enter键生成默认密码）:${reset_color}"
@@ -75,6 +80,49 @@ init() {
     # 更新.env文件
     sed -i "s/MYSQL_ROOT_PASSWORD =.*/MYSQL_ROOT_PASSWORD = $mysql_password/" .env
     sed -i "s/MYSQL_DATABASE =.*/MYSQL_DATABASE = $mysql_database/" .env
+}
+
+get_user_input() {
+    read -p "$1" response
+    echo "$response"
+}
+
+# 询问用户是否需要绑定域名
+ask_domain_binding() {
+    response=$(get_user_input "是否需要绑定域名？(Y/n): ")
+    response=$(echo "$response" | tr '[:upper:]' '[:lower:]')
+    if [[ $response == "y" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# 询问用户要绑定的域名
+ask_domain_name() {
+    domain_name=$(get_user_input "请输入域名: ")
+    domain_name=$(echo "$domain_name" | tr -d '[:space:]')
+    echo "$domain_name"
+}
+
+# 替换文件中的文本
+replace_text_in_file() {
+    file_path="$1"
+    old_text="$2"
+    new_text="$3"
+    sed -i "s|$old_text|$new_text|g" "$file_path"
+}
+
+# 主函数
+replace_domain_name() {
+    bind_domain=false
+
+    ask_domain_binding
+    if [[ $? -eq 0 ]]; then
+        bind_domain=true
+        domain_name=$(ask_domain_name)
+        replace_text_in_file "caddy.conf" ":80" "https://$domain_name"
+    fi
 }
 
 ###
@@ -102,4 +150,5 @@ php composer.phar install'
 exit_if_not_root
 check_depend
 init
+replace_domain_name
 launch
