@@ -52,7 +52,7 @@ init() {
     git submodule update --init
     git submodule update --remote
 
-    find . -type f -name "*.example" -exec bash -c 'cp "$1" "${1%.example}"' bash {} \;
+    find . -maxdepth 1 -type f -name "*.example" -exec bash -c 'newname="${1%.example}"; mv "$1" "$newname"' bash {} \;
 
     # 提示用户输入mysql密码
     echo -e "${color}请输入mysql密码（按Enter键生成默认密码）:${reset_color}"
