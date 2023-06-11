@@ -50,6 +50,7 @@ check_v2board_directory() {
 
 # 初始化设置
 init() {
+    cd $V2BOARD_DIR
     # 更新 git 子模块和重命名示例文件
     git submodule update --init
     git submodule update --remote
