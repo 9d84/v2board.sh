@@ -35,7 +35,7 @@ check_depend() {
 }
 
 check_v2board_directory() {
-    V2BOARD_DIR="/usr/bin/etc/v2board.sh"
+    V2BOARD_DIR="/usr/local/etc/v2board.sh"
     V2BOARD_SCRIPT="/usr/bin/v2board.sh"
     REPO_URL="https://github.com/9d84/v2board.sh"
 
@@ -135,11 +135,18 @@ php composer.phar install'
 # 更新 v2board
 update_v2board() {
     echo "正在更新 v2board..."
-    rm "$V2BOARD_SCRIPT"
-    wget -O "$V2BOARD_SCRIPT" "https://raw.githubusercontent.com/9d84/v2board.sh/master/v2board.sh"
-    chmod +x "$V2BOARD_SCRIPT"
+    docker compose exec www bash update.sh
     echo "v2board 更新完成！"
 }
+
+#更新脚本
+update_script() {
+    echo "正在更新脚本..."
+    wget -O "$V2BOARD_DIR/v2board.sh" "https://raw.githubusercontent.com/9d84/v2board.sh/master/v2board.sh"
+    chmod +x "$V2BOARD_SCRIPT"
+    echo "脚本更新完成！"
+}
+
 
 # 主菜单
 show_menu() {
