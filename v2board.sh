@@ -155,6 +155,9 @@ php composer.phar install'
 "
 
     docker compose exec www php artisan v2board:install
+    # 解决站点提示“队列服务运行异常的问题”
+    cd $V2BOARD_DIR
+    docker compose restart
 }
 
 # 更新 v2board
