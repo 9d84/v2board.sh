@@ -34,6 +34,19 @@ check_depend() {
     fi
 }
 
+check_v2board_directory() {
+    V2BOARD_DIR="/usr/bin/etc/v2board.sh"
+    V2BOARD_SCRIPT="/usr/bin/v2board.sh"
+    REPO_URL="https://github.com/9d84/v2board.sh"
+
+    if [[ ! -d "$V2BOARD_DIR" ]]; then
+        echo "v2board.sh 目录不存在，正在进行安装..."
+        git clone "$REPO_URL" "$V2BOARD_DIR"
+        ln -s "$V2BOARD_DIR/v2board.sh" "$V2BOARD_SCRIPT"
+        echo "快捷方式安装成功！输入 v2board.sh 即可进入脚本。"
+    fi
+}
+
 # 初始化设置
 init() {
     # 更新 git 子模块和重命名示例文件
@@ -119,16 +132,60 @@ php composer.phar install'
     docker compose exec www php artisan v2board:install
 }
 
+# 更新 v2board
+update_v2board() {
+    echo "正在更新 v2board..."
+    rm "$V2BOARD_SCRIPT"
+    wget -O "$V2BOARD_SCRIPT" "https://raw.githubusercontent.com/9d84/v2board.sh/master/v2board.sh"
+    chmod +x "$V2BOARD_SCRIPT"
+    echo "v2board 更新完成！"
+}
+
+# 主菜单
+show_menu() {
+    echo "请选择要执行的操作:"
+    echo "[1] 安装 v2board"
+    echo "[2] 更新脚本"
+    echo "[3] 更新 v2board"
+    echo "[Q] 退出"
+}
+
 # 主函数
 main() {
     exit_if_not_root
     check_depend
-    init
-    if ask_domain_binding; then
-        replace_domain_name
-        email
-    fi
-    launch
+    check_v2board_directory
+
+    while true; do
+        show_menu
+
+        read -p "请选择操作: " choice
+
+        case $choice in
+            1)
+                init
+                if ask_domain_binding; then
+                    replace_domain_name
+                    email
+                fi
+                launch
+                ;;
+            2)
+                update_script
+                ;;
+            3)
+                update_v2board
+                ;;
+            [Qq])
+                break
+                ;;
+            *)
+                echo "无效的选择，请重新输入."
+                ;;
+        esac
+
+        echo
+    done
 }
 
 # 调用主函数
