@@ -101,6 +101,15 @@ replace_text_in_file() {
     sed -i "s|$old_text|$new_text|g" "$file_path"
 }
 
+replace_domain_name() {
+    bind_domain=false
+    if ask_domain_binding; then
+        bind_domain=true
+        domain_name=$(ask_domain_name)
+        replace_text_in_file "caddy.conf" ":80" "$domain_name"
+    fi
+}
+
 # 提示用户输入邮箱地址，并将邮箱地址添加到 caddy.conf 文件
 email() {
     email=$(get_user_input "请输入您的邮箱地址：")
