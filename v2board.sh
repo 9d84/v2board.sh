@@ -41,6 +41,7 @@ check_v2board_directory() {
 
     if [[ ! -d "$V2BOARD_DIR" ]]; then
         echo "v2board.sh 目录不存在，正在进行安装..."
+        mkdir -p $V2BOARD_DIR
         git clone "$REPO_URL" "$V2BOARD_DIR"
         ln -s "$V2BOARD_DIR/v2board.sh" "$V2BOARD_SCRIPT"
         echo "快捷方式安装成功！输入 v2board.sh 即可进入脚本。"
