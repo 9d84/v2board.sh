@@ -34,6 +34,7 @@ check_depend() {
     fi
 }
 
+#检查并安装脚本
 check_v2board_directory() {
     V2BOARD_DIR="/usr/local/etc/v2board.sh"
     V2BOARD_SCRIPT="/usr/bin/v2board.sh"
@@ -45,6 +46,18 @@ check_v2board_directory() {
         git clone "$REPO_URL" "$V2BOARD_DIR"
         ln -s "$V2BOARD_DIR/v2board.sh" "$V2BOARD_SCRIPT"
         echo "快捷方式安装成功！输入 v2board.sh 即可进入脚本。"
+    fi
+}
+
+#防止重复安装
+check_env_file() {
+    ENV_FILE="/usr/local/etc/v2board.sh/www/.env"
+
+    if [[ -f "$ENV_FILE" ]]; then
+        echo "您已安装过v2board"
+        echo "如果需要重新安装的，请rm -rf /usr/local/etc/v2board.sh再重装"
+        echo "如果需要更新v2board,请在菜单中选择"
+        exit 1
     fi
 }
 
@@ -101,6 +114,7 @@ replace_text_in_file() {
     sed -i "s|$old_text|$new_text|g" "$file_path"
 }
 
+# 替换caddy.conf中的域名
 replace_domain_name() {
     bind_domain=false
     if ask_domain_binding; then
@@ -146,7 +160,14 @@ php composer.phar install'
 # 更新 v2board
 update_v2board() {
     echo "正在更新 v2board..."
-    docker compose exec www bash update.sh
+    cd $V2BOARD_DIR
+    git config --global --add safe.directory $V2BOARD_DIR/www
+    git submodule update --remote
+    docker compose exec www bash -c "
+    wget https://github.com/composer/composer/releases/latest/download/composer.phar -O composer.phar && \
+    php composer.phar update -vvv &&\
+    php artisan v2board:update
+    "
     echo "v2board 更新完成！"
 }
 
@@ -181,6 +202,7 @@ main() {
 
         case $choice in
             1)
+                check_env_file
                 init
                 if ask_domain_binding; then
                     replace_domain_name
