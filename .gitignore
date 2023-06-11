@@ -3,3 +3,4 @@
 debug.sh
 .env
 caddy.conf
+/wwwlogs
