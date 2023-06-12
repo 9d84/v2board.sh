@@ -3,6 +3,36 @@
 # v2board.sh
 # https://github.com/9d84/v2board.sh
 
+# 颜色输出
+echo_content() {
+    case $1 in
+    # 红色
+    "red")
+        # shellcheck disable=SC2154
+        ${echoType} "\033[31m${printN}$2 \033[0m"
+        ;;
+        # 天蓝色
+    "sky_blue")
+        ${echoType} "\033[1;36m${printN}$2 \033[0m"
+        ;;
+        # 绿色
+    "green")
+        ${echoType} "\033[32m${printN}$2 \033[0m"
+        ;;
+        # 白色
+    "white")
+        ${echoType} "\033[37m${printN}$2 \033[0m"
+        ;;
+    "magenta")
+        ${echoType} "\033[31m${printN}$2 \033[0m"
+        ;;
+        # 黄色
+    "yellow")
+        ${echoType} "\033[33m${printN}$2 \033[0m"
+        ;;
+    esac
+}
+
 # 检查当前用户是否为 root 用户
 check_root() {
     [[ $(id -u) -eq 0 ]]
@@ -10,7 +40,10 @@ check_root() {
 
 # 如果不是 root 用户，退出脚本
 exit_if_not_root() {
-    check_root || { echo "请用root权限运行此脚本" >&2; exit 1; }
+    check_root || {
+        echo "请用root权限运行此脚本" >&2
+        exit 1
+    }
 }
 
 # 检查依赖命令是否安装
@@ -27,8 +60,8 @@ check_depend() {
     done
 
     # 如果有命令未找到，则输出缺失的依赖信息并退出脚本
-    if (( ${#missing_depends[@]} > 0 )); then
-        echo "缺少以下依赖:"
+    if ((${#missing_depends[@]} > 0)); then
+        echo_content red "缺少以下依赖:"
         printf -- '- %s\n' "${missing_depends[@]}"
         exit 1
     fi
@@ -41,11 +74,11 @@ check_v2board_directory() {
     REPO_URL="https://github.com/9d84/v2board.sh"
 
     if [[ ! -d "$V2BOARD_DIR" ]]; then
-        echo "v2board.sh 目录不存在，正在进行安装..."
+        echo_content yellow "v2board.sh 目录不存在，正在进行安装..."
         mkdir -p $V2BOARD_DIR
         git clone "$REPO_URL" "$V2BOARD_DIR"
         ln -s "$V2BOARD_DIR/v2board.sh" "$V2BOARD_SCRIPT"
-        echo "快捷方式安装成功！输入 v2board.sh 即可进入脚本。"
+        echo_content green "快捷方式安装成功！输入 v2board.sh 即可进入脚本。"
     fi
 }
 
@@ -54,9 +87,9 @@ check_env_file() {
     ENV_FILE="/usr/local/etc/v2board.sh/www/.env"
 
     if [[ -f "$ENV_FILE" ]]; then
-        echo "您已安装过v2board"
-        echo "如果需要重新安装的，请rm -rf /usr/local/etc/v2board.sh再重装"
-        echo "如果需要更新v2board,请在菜单中选择"
+        echo_content yellow "您已安装过v2board"
+        echo_content yellow "如果需要重新安装的，请rm -rf /usr/local/etc/v2board.sh再重装"
+        echo_content yellow "如果需要更新v2board,请在菜单中选择"
         exit 1
     fi
 }
@@ -132,7 +165,10 @@ email() {
     pattern="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
 
     # 检查输入的邮箱地址是否有效
-    [[ $email =~ $pattern ]] || { echo "请输入有效的邮箱地址"; exit 1; }
+    [[ $email =~ $pattern ]] || {
+        echo_content red "请输入有效的邮箱地址"
+        exit 1
+    }
 
     # 将邮箱地址添加到 caddy.conf 文件
     sed -i "0,/{/ s/{/{\ntls ${email}/" caddy.conf
@@ -146,7 +182,7 @@ launch() {
         'wget https://getcomposer.org/download/latest-stable/composer.phar && \
 php composer.phar install'
 
-    echo "请在下方输入相关信息"
+    echo_content sky_blue "请在下方输入相关信息"
     echo "
 数据库地址： mysql
 数据库名: $mysql_database
@@ -158,6 +194,9 @@ php composer.phar install'
     # 解决站点提示“队列服务运行异常的问题”
     cd $V2BOARD_DIR
     docker compose restart
+
+    echo_content green "配置文件位于$V2BOARD_DIR"
+
 }
 
 # 更新 v2board
@@ -171,21 +210,20 @@ update_v2board() {
     php composer.phar update -vvv &&\
     php artisan v2board:update
     "
-    echo "v2board 更新完成！"
+    echo_content green "v2board 更新完成！"
 }
 
 #更新脚本
 update_script() {
-    echo "正在更新脚本..."
+    echo_content sky_blue "正在更新脚本..."
     wget -O "$V2BOARD_DIR/v2board.sh" "https://raw.githubusercontent.com/9d84/v2board.sh/master/v2board.sh"
     chmod +x "$V2BOARD_SCRIPT"
-    echo "脚本更新完成！"
+    echo_content green "脚本更新完成！"
 }
-
 
 # 主菜单
 show_menu() {
-    echo "请选择要执行的操作:"
+    echo_content sky_blue "请选择要执行的操作:"
     echo "[1] 安装 v2board"
     echo "[2] 更新脚本"
     echo "[3] 更新 v2board"
@@ -204,27 +242,27 @@ main() {
         read -p "请选择操作: " choice
 
         case $choice in
-            1)
-                check_env_file
-                init
-                if ask_domain_binding; then
-                    replace_domain_name
-                    email
-                fi
-                launch
-                ;;
-            2)
-                update_script
-                ;;
-            3)
-                update_v2board
-                ;;
-            [Qq])
-                break
-                ;;
-            *)
-                echo "无效的选择，请重新输入."
-                ;;
+        1)
+            check_env_file
+            init
+            if ask_domain_binding; then
+                replace_domain_name
+                email
+            fi
+            launch
+            ;;
+        2)
+            update_script
+            ;;
+        3)
+            update_v2board
+            ;;
+        [Qq])
+            break
+            ;;
+        *)
+            echo_content red "无效的选择，请重新输入."
+            ;;
         esac
 
         echo
