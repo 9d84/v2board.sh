@@ -5,32 +5,18 @@
 
 # 颜色输出
 echo_content() {
-    case $1 in
-    # 红色
-    "red")
-        # shellcheck disable=SC2154
-        ${echoType} "\033[31m${printN}$2 \033[0m"
-        ;;
-        # 天蓝色
-    "sky_blue")
-        ${echoType} "\033[1;36m${printN}$2 \033[0m"
-        ;;
-        # 绿色
-    "green")
-        ${echoType} "\033[32m${printN}$2 \033[0m"
-        ;;
-        # 白色
-    "white")
-        ${echoType} "\033[37m${printN}$2 \033[0m"
-        ;;
-    "magenta")
-        ${echoType} "\033[31m${printN}$2 \033[0m"
-        ;;
-        # 黄色
-    "yellow")
-        ${echoType} "\033[33m${printN}$2 \033[0m"
-        ;;
-    esac
+    if [[ $TERM =~ ^screen.* ]]; then
+        echo $@ # 不支持颜色的终端直接输出
+    else
+        case $1 in # 支持颜色的终端使用颜色输出
+        "red") printf "\033[31m$@\033[0m\n" ;;
+        "sky_blue") printf "\033[1;36m$@\033[0m\n" ;;
+        "green") printf "\033[32m$@\033[0m\n" ;;
+        "white") printf "\033[37m$@\033[0m\n" ;;
+        "magenta") printf "\033[31m$@\033[0m\n" ;;
+        "yellow") printf "\033[33m$@\033[0m\n" ;;
+        esac
+    fi
 }
 
 # 检查当前用户是否为 root 用户
@@ -230,6 +216,11 @@ show_menu() {
     echo "[Q] 退出"
 }
 
+handle_error() {
+    echo_content red "$1"
+    exit 1 
+}
+
 # 主函数
 main() {
     exit_if_not_root
@@ -261,13 +252,14 @@ main() {
             break
             ;;
         *)
-            echo_content red "无效的选择，请重新输入."
+           handle_error "无效的选择,请重新输入."  # 错误处理
             ;;
         esac
 
         echo
     done
 }
+
 
 # 调用主函数
 main
