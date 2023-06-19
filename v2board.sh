@@ -5,16 +5,18 @@
 
 # 颜色输出
 echo_content() {
+    color=$1
+    shift
     if [[ $TERM =~ ^screen.* ]]; then
         echo $@ # 不支持颜色的终端直接输出
     else
-        case $1 in # 支持颜色的终端使用颜色输出
-        "red") printf "\033[31m$@\033[0m\n" ;;
-        "sky_blue") printf "\033[1;36m$@\033[0m\n" ;;
-        "green") printf "\033[32m$@\033[0m\n" ;;
-        "white") printf "\033[37m$@\033[0m\n" ;;
-        "magenta") printf "\033[31m$@\033[0m\n" ;;
-        "yellow") printf "\033[33m$@\033[0m\n" ;;
+        case $color in # 支持颜色的终端使用颜色输出
+        "red") printf "\033[31m%s\033[0m\n" "$@" ;;
+        "sky_blue") printf "\033[1;36m%s\033[0m\n" "$@" ;;
+        "green") printf "\033[32m%s\033[0m\n" "$@" ;;
+        "white") printf "\033[37m%s\033[0m\n" "$@" ;;
+        "magenta") printf "\033[31m%s\033[0m\n" "$@" ;;
+        "yellow") printf "\033[33m%s\033[0m\n" "$@" ;;
         esac
     fi
 }
