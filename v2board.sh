@@ -55,6 +55,20 @@ check_depend() {
     fi
 }
 
+#检查输入
+check_format() {
+    case $1 in
+    "email")
+        pattern="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$" 
+        [[ $2 =~ $pattern ]] 
+        ;;
+    "domain_name") 
+        pattern="^[A-Za-z0-9][A-Za-z0-9.-]{0,61}[A-Za-z0-9]\.[A-Za-z]{2,}$"
+        [[ $2 =~ $pattern ]] 
+        ;; 
+     esac
+}
+
 #检查并安装脚本
 check_v2board_directory() {
     V2BOARD_DIR="/usr/local/etc/v2board.sh"
@@ -114,18 +128,21 @@ get_user_input() {
 }
 
 # 询问用户是否需要绑定域名
+# 询问用户是否需要绑定域名  
 ask_domain_binding() {
-    response=$(get_user_input "是否需要绑定域名？(y/N): ")
+    bind_domain=false
+    response=$(get_user_input "是否需要绑定域名?(y/N): ")
     response=$(echo "$response" | tr '[:upper:]' '[:lower:]')
-    [[ $response == "y" ]]
-}
+    [[ $response == "y" ]] && bind_domain=true && ask_domain_name
+    echo $bind_domain
+} 
 
 # 询问用户要绑定的域名
 ask_domain_name() {
     domain_name=$(get_user_input "请输入域名: ")
     domain_name=$(echo "$domain_name" | tr -d '[:space:]')
-    echo "$domain_name"
-}
+    replace_text_in_file "caddy.conf" ":80" "$domain_name"
+}  
 
 # 替换文件中的文本
 replace_text_in_file() {
@@ -135,30 +152,13 @@ replace_text_in_file() {
     sed -i "s|$old_text|$new_text|g" "$file_path"
 }
 
-# 替换caddy.conf中的域名
-replace_domain_name() {
-    bind_domain=false
-    if ask_domain_binding; then
-        bind_domain=true
-        domain_name=$(ask_domain_name)
-        replace_text_in_file "caddy.conf" ":80" "$domain_name"
-    fi
-}
-
 # 提示用户输入邮箱地址，并将邮箱地址添加到 caddy.conf 文件
 email() {
-    email=$(get_user_input "请输入您的邮箱地址：")
-
-    # 邮箱地址的正则表达式模式
-    pattern="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
-
-    # 检查输入的邮箱地址是否有效
-    [[ $email =~ $pattern ]] || {
+    email=$(get_user_input "请输入您的邮箱地址:")  
+    check_format "email" "$email" || {
         echo_content red "请输入有效的邮箱地址"
-        exit 1
+        exit 1 
     }
-
-    # 将邮箱地址添加到 caddy.conf 文件
     sed -i "0,/{/ s/{/{\ntls ${email}/" caddy.conf
 }
 
@@ -220,7 +220,6 @@ show_menu() {
 
 handle_error() {
     echo_content red "$1"
-    exit 1 
 }
 
 # 主函数
@@ -239,7 +238,6 @@ main() {
             check_env_file
             init
             if ask_domain_binding; then
-                replace_domain_name
                 email
             fi
             launch
