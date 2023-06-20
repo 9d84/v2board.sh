@@ -5,4 +5,5 @@
     rewrite {
         to {path} {path}/ /index.php?{query}
     }
+    try_files /www/public/index.html /www/public/index.php
 }
