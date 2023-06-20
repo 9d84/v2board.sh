@@ -108,7 +108,7 @@ init() {
     mysql_password=$(get_user_input "请输入mysql密码（Enter生成随机密码）：")
 
     # 如果密码为空，则生成一个默认密码
-    [[ -z $mysql_password ]] && mysql_password=$(openssl rand -base64 12)
+    [[ -z $mysql_password ]] && mysql_password=$(openssl rand -base64 12 | tr '/' '_')
 
     # 提示用户输入 mysql 数据库名称
     mysql_database=$(get_user_input "请输入 mysql 数据库名称（默认为 v2board）:")
