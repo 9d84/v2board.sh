@@ -191,7 +191,7 @@ php composer.phar install'
 update_v2board() {
     echo_content sky_blue "正在更新 v2board..."
     cd $V2BOARD_DIR
-    docker compose exec www bash -c "apk add git && rm -rf ./git* && git init && git remote add origin https://github.com/v2board/v2board.git && bash ./update.sh"    
+    docker compose exec www bash -c "apk add git && rm -rf ./.git* && git init && git remote add origin https://github.com/v2board/v2board.git && bash ./update.sh"    
 }
 
 #更新脚本
