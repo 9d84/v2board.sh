@@ -189,16 +189,9 @@ php composer.phar install'
 
 # 更新 v2board
 update_v2board() {
-    echo "正在更新 v2board..."
+    echo_content sky_blue "正在更新 v2board..."
     cd $V2BOARD_DIR
-    git config --global --add safe.directory $V2BOARD_DIR/www
-    git submodule update --remote
-    docker compose exec www bash -c "
-    wget https://github.com/composer/composer/releases/latest/download/composer.phar -O composer.phar && \
-    php composer.phar update -vvv &&\
-    php artisan v2board:update
-    "
-    echo_content green "v2board 更新完成！"
+    docker compose exec www bash -c "apk add git && rm -rf ./git* && git init && git remote add origin https://github.com/v2board/v2board.git && bash ./update.sh"    
 }
 
 #更新脚本
